@@ -10,3 +10,5 @@
 - Screenshots in this folder are actual application captures.
 
 Manual checks were performed in Chrome only. This is not a formal cross-browser or accessibility certification.
+
+GitHub Actions build/test/deploy passed after switching dependency URLs to the public npm registry. Live root URL rendered the complete dashboard successfully.

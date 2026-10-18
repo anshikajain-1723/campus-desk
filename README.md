@@ -4,6 +4,8 @@ An original student-management frontend portfolio project for **Anshika Jain**, 
 
 > **Demo only.** Northfield Academy and all students are fictional. This application uses browser local storage; it is not a production school system or a client project. Do not enter real personal data.
 
+[Open the live demo](https://anshikajain-1723.github.io/campus-desk/)
+
 ## Preview
 
 ![Campus Desk overview](docs/overview.png)
