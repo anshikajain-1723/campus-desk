@@ -1,0 +1,49 @@
+<a class="skip-link" href="#main">Skip to content</a>
+<aside class="sidebar">
+  <a class="brand" routerLink="/overview"
+    ><span class="brand-icon">c<span>•</span></span
+    ><span>campus<span class="brand-light">desk</span><small>STUDENT WORKSPACE</small></span></a
+  >
+  <div class="workspace">
+    <span class="workspace-icon">N</span>
+    <div><strong>Northfield Academy</strong><small>Sample workspace</small></div>
+    <span class="demo-dot"></span>
+  </div>
+  <p class="nav-label">WORKSPACE</p>
+  <nav aria-label="Main navigation">
+    <a routerLink="/overview" routerLinkActive="selected"
+      ><span aria-hidden="true">▦</span> Overview</a
+    >
+    <a routerLink="/students" routerLinkActive="selected"
+      ><span aria-hidden="true">♧</span> Students <b>{{ store.total() }}</b></a
+    >
+    <a routerLink="/about" routerLinkActive="selected"
+      ><span aria-hidden="true">ⓘ</span> About this demo</a
+    >
+  </nav>
+  <div class="sidebar-bottom">
+    <div class="demo-card">
+      <span class="eyebrow">A LITTLE ROOM TO EXPLORE</span>
+      <h3>Make it your own.</h3>
+      <p>Add a student. Try a filter. Your changes stay in this browser.</p>
+      <a routerLink="/about">How this demo works <span>↗</span></a>
+    </div>
+    <div class="creator">
+      <span class="avatar owner">AJ</span>
+      <div><strong>Anshika Jain</strong><small>Angular frontend developer</small></div>
+    </div>
+  </div>
+</aside>
+<div class="main-shell">
+  <header class="topbar">
+    <span>Workspace <span class="slash">/</span> <strong>Student management</strong></span
+    ><span class="demo-badge"><i></i> Interactive demo</span>
+  </header>
+  <main id="main">
+    @if (store.notice()) {
+      <div class="notice" role="status">{{ store.notice() }}</div>
+    }
+    <router-outlet />
+  </main>
+  <footer>Designed & built as a portfolio demo <span>Angular · TypeScript · SCSS</span></footer>
+</div>

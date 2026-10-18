@@ -1,0 +1,288 @@
+<div class="page-heading">
+  <div>
+    <p class="eyebrow">EVERY RECORD, ONE PLACE</p>
+    <h1>Student directory<span class="green">.</span></h1>
+    <p class="subtitle">Keep the details organized. Keep your campus moving.</p>
+  </div>
+  <div class="button-row">
+    <button class="button" (click)="exportCsv()" [disabled]="!filtered().length">
+      ↓ Export CSV</button
+    ><button class="button primary" (click)="openEditor()">＋ Add student</button>
+  </div>
+</div>
+@if (message()) {
+  <div class="toast" role="status">
+    ✓ {{ message() }}<button aria-label="Dismiss notification" (click)="message.set('')">×</button>
+  </div>
+}
+<section class="panel">
+  <div class="directory-heading">
+    <div>
+      <h2>
+        All students <span class="count-badge">{{ store.total() }}</span>
+      </h2>
+      <p>Browse, update and manage your student records.</p>
+    </div>
+    <span class="tag">Sample data only</span>
+  </div>
+  <div class="filters">
+    <label class="search-field"
+      ><span aria-hidden="true">⌕</span
+      ><input
+        aria-label="Search students"
+        placeholder="Search name, email or student ID…"
+        [value]="search()"
+        (input)="updateSearch($any($event.target).value)" /></label
+    ><select
+      aria-label="Filter by program"
+      [value]="program()"
+      (change)="program.set($any($event.target).value); page.set(1)"
+    >
+      <option value="">All programs</option>
+      @for (p of programs; track p) {
+        <option [value]="p">{{ p }}</option>
+      }</select
+    ><select
+      aria-label="Filter by status"
+      [value]="status()"
+      (change)="status.set($any($event.target).value); page.set(1)"
+    >
+      <option value="">All statuses</option>
+      <option>Active</option>
+      <option>On leave</option>
+      <option>Graduated</option></select
+    ><select
+      aria-label="Sort students"
+      [value]="sort()"
+      (change)="sort.set($any($event.target).value); page.set(1)"
+    >
+      <option value="name">Name A–Z</option>
+      <option value="newest">Newest enrolled</option>
+      <option value="attendance">Lowest attendance</option>
+    </select>
+  </div>
+  <div class="filter-summary">
+    <label
+      ><input
+        type="checkbox"
+        [checked]="attention()"
+        (change)="attention.set($any($event.target).checked); page.set(1)"
+      />
+      Needs attention (active, below 75%)</label
+    >
+    @if (search() || program() || status() || attention()) {
+      <button class="text-link" (click)="clearFilters()">Clear filters</button>
+    }
+  </div>
+  <div class="table-scroll">
+    <table class="directory-table">
+      <thead>
+        <tr>
+          <th>Student</th>
+          <th>Program / year</th>
+          <th>Status</th>
+          <th>Attendance</th>
+          <th class="right">Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (s of visible(); track s.id) {
+          <tr>
+            <td>
+              <div class="student-cell">
+                <span class="avatar">{{ initials(s.name) }}</span
+                ><span
+                  ><strong>{{ s.name }}</strong
+                  ><small>{{ s.email }}</small></span
+                >
+              </div>
+            </td>
+            <td>
+              <strong class="cell-title">{{ s.program }}</strong
+              ><small>Year {{ s.year }} · {{ s.id }}</small>
+            </td>
+            <td>
+              <span
+                class="status"
+                [class.active]="s.status === 'Active'"
+                [class.leave]="s.status === 'On leave'"
+                >{{ s.status }}</span
+              >
+            </td>
+            <td>
+              <div class="attendance-value" [class.low]="s.attendance < 75">
+                <span>{{ s.attendance }}%</span>
+                <div><i [style.width.%]="s.attendance"></i></div>
+              </div>
+            </td>
+            <td>
+              <div class="row-actions">
+                <button [attr.aria-label]="'Edit ' + s.name" (click)="openEditor(s)">Edit</button
+                ><button
+                  class="danger-text"
+                  [attr.aria-label]="'Delete ' + s.name"
+                  (click)="confirmDelete(s)"
+                >
+                  Delete
+                </button>
+              </div>
+            </td>
+          </tr>
+        } @empty {
+          <tr>
+            <td colspan="5">
+              <div class="empty-state">
+                <span>⌕</span>
+                <h3>
+                  {{ store.total() ? 'No students match your filters' : 'Your directory is empty' }}
+                </h3>
+                <p>
+                  {{
+                    store.total()
+                      ? 'Try another name or clear your filters.'
+                      : 'Add a student to get started.'
+                  }}
+                </p>
+                <button class="button" (click)="store.total() ? clearFilters() : openEditor()">
+                  {{ store.total() ? 'Clear filters' : 'Add student' }}
+                </button>
+              </div>
+            </td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  </div>
+  <div class="pagination">
+    <span
+      >Showing <strong>{{ firstRecord() }}–{{ lastRecord() }}</strong> of
+      {{ filtered().length }} students</span
+    >
+    <div>
+      <button
+        class="button"
+        aria-label="Previous page"
+        [disabled]="currentPage() === 1"
+        (click)="page.set(currentPage() - 1)"
+      >
+        ←</button
+      ><span>{{ currentPage() }} / {{ pageCount() }}</span
+      ><button
+        class="button"
+        aria-label="Next page"
+        [disabled]="currentPage() === pageCount()"
+        (click)="page.set(currentPage() + 1)"
+      >
+        →
+      </button>
+    </div>
+  </div>
+</section>
+<p class="demo-note">Fictional records for exploration. Changes are saved only in this browser.</p>
+<dialog #editor aria-labelledby="editor-title">
+  <form [formGroup]="form" (ngSubmit)="save()">
+    <div class="dialog-heading">
+      <div>
+        <p class="eyebrow">STUDENT DETAILS</p>
+        <h2 id="editor-title">{{ editing() ? 'Edit student' : 'Add a new student' }}</h2>
+      </div>
+      <button
+        type="button"
+        class="icon-button"
+        aria-label="Close student editor"
+        (click)="closeEditor()"
+      >
+        ×
+      </button>
+    </div>
+    <p class="dialog-subtitle">Use fictional information in this public demo.</p>
+    @if (error()) {
+      <p class="error-banner" role="alert">{{ error() }}</p>
+    }
+    <div class="form-grid">
+      <label class="span-two"
+        >Full name
+        <input
+          formControlName="name"
+          placeholder="e.g. Alex Morgan"
+          autocomplete="off"
+          [attr.aria-invalid]="invalid('name')"
+        />
+        @if (invalid('name')) {
+          <small class="error">Enter a name between 2 and 80 characters.</small>
+        }</label
+      ><label class="span-two"
+        >Email address
+        <input
+          formControlName="email"
+          type="email"
+          placeholder="alex@example.com"
+          autocomplete="off"
+          [attr.aria-invalid]="invalid('email')"
+        />
+        @if (invalid('email')) {
+          <small class="error">Enter a valid email address.</small>
+        }</label
+      ><label
+        >Program<select formControlName="program">
+          @for (p of programs; track p) {
+            <option [value]="p">{{ p }}</option>
+          }
+        </select></label
+      ><label
+        >Academic year<select formControlName="year">
+          <option [ngValue]="1">Year 1</option>
+          <option [ngValue]="2">Year 2</option>
+          <option [ngValue]="3">Year 3</option>
+          <option [ngValue]="4">Year 4</option>
+        </select></label
+      ><label
+        >Status<select formControlName="status">
+          <option>Active</option>
+          <option>On leave</option>
+          <option>Graduated</option>
+        </select></label
+      ><label
+        >Attendance (%)<input
+          formControlName="attendance"
+          type="number"
+          min="0"
+          max="100"
+          [attr.aria-invalid]="invalid('attendance')"
+        />
+        @if (invalid('attendance')) {
+          <small class="error">Use a number from 0 to 100.</small>
+        }</label
+      ><label class="span-two"
+        >Enrollment date<input
+          formControlName="enrolled"
+          type="date"
+          [attr.aria-invalid]="invalid('enrolled')"
+        />
+        @if (invalid('enrolled')) {
+          <small class="error">Choose an enrollment date.</small>
+        }
+      </label>
+    </div>
+    <div class="dialog-actions">
+      <button class="button" type="button" (click)="closeEditor()">Cancel</button
+      ><button class="button primary" type="submit">
+        {{ editing() ? 'Save changes' : 'Create student' }}
+      </button>
+    </div>
+  </form>
+</dialog>
+<dialog #deleteDialog class="small-dialog" aria-labelledby="delete-title">
+  <h2 id="delete-title">Delete this student?</h2>
+  <p>
+    <strong>{{ deleting()?.name }}</strong> will be removed from this browser's demo records. You
+    can restore all sample data from About this demo.
+  </p>
+  @if (error()) {
+    <p class="error" role="alert">{{ error() }}</p>
+  }
+  <div class="dialog-actions">
+    <button class="button" (click)="deleteDialog.close()">Cancel</button
+    ><button class="button danger" (click)="deleteStudent()">Delete student</button>
+  </div>
+</dialog>
